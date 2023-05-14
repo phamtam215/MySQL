@@ -195,3 +195,56 @@ CREATE TABLE unique_cats3 (
   - Nếu add vào 5 thì sẽ là 1,2,3,5
   - Nếu từ 5 add kiểu tự động tăng thì 1,2,3,5,6 bỏ qua giá trị 4
 
+----
+**18 Introducing SELECT**
+~~~~sql
+-- give me all columns of cats table
+SELECT * FROM cats
+-- give me "name" columns of cats table
+SELECT name FROM cats
+-- give me "name", "age" columns of cats table
+SELECT name, age FROM cats
+~~~~
+
+**19 WHERE**
+- WHERE rất được hay sử dụng
+~~~~sql
+-- tìm tất cả con mèo có tuổi bằng 4, hiển thị tất cả cột
+SELECT * FROM cats WHERE age=4; 
+-- tìm tất cả con mèo có tuổi bằng 4, hiển thị cột "name" và "age"
+SELECT name, age FROM cats WHERE age=4;
+-- tìm tất cả con mèo có name bằng "Egg", hiển thị tất cả cột 
+SELECT * FROM cats WHERE name="Egg"; 
+-- không phân biệt chữ hoa thường
+SELECT * FROM cats WHERE name="EgG";
+SELECT * FROM cats WHERE name="EGG"; 
+-- tìm tất cả con mèo mà giá trị 2 cột cat_id và tuổi bằng nhau
+SELECT * FROM cats WHERE cat_id=age;
+~~~~
+
+**20 ALIASES**
+- Dễ dàng cho việc đọc result hơn
+- Có thể đổi tên 1 cột trong truy vấn đề có thể ngắn, dễ đọc, dễ type...
+- Không phải đổi tên cột mà là đổi ở chỗ kết quả đầu ra 
+~~~sql
+SELECT cat_id, name FROM cats;
+~~~
+![image](/uploads/d97557a79e2374c01bc0d9c52eccc7e4/image.png)
+
+~~~sql
+SELECT cat_id AS id, name FROM cats;
+~~~
+
+![image](/uploads/ac8af285beed4f606384e27a8a402484/image.png)
+
+**21 UPDATE**
+~~~sql
+UPDATE cats SET breed='Shorthair' WHERE breed='Tabby';
+--- kiểu WHERE khác
+UPDATE cats SET age=14 WHERE name='Misty';
+~~~
+
+**22 DELETE**
+~~~sql
+DELETE FROM cats WHERE name='Egg';
+~~~
