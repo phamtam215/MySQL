@@ -176,6 +176,7 @@ INSERT INTO unique_cats (cat_id,name,age) VALUES(2,'tam',20); --1 sẽ báo lỗ
 ~~~~
 - Tuy nhiên, việc add thêm 1,2,3 như này khá phiền, cần 1 cơ chế auto increment
 - PRIMARY KEY không thể là giá trị NULL, DESC table ra sẽ thấy điều đó
+
 **17. AUTO_INCREMENT**
 - Tự động tăng giá trị khóa chính cat_id, bắt đầu từ 1
 - DESC ra sẽ thấy trường extra có dòng auto_increment
@@ -196,7 +197,7 @@ CREATE TABLE unique_cats3 (
   - Nếu từ 5 add kiểu tự động tăng thì 1,2,3,5,6 bỏ qua giá trị 4
 
 ----
-**18 Introducing SELECT**
+**18. Introducing SELECT**
 ~~~~sql
 -- give me all columns of cats table
 SELECT * FROM cats
@@ -206,7 +207,7 @@ SELECT name FROM cats
 SELECT name, age FROM cats
 ~~~~
 
-**19 WHERE**
+**19. WHERE**
 - WHERE rất được hay sử dụng
 ~~~~sql
 -- tìm tất cả con mèo có tuổi bằng 4, hiển thị tất cả cột
@@ -222,7 +223,7 @@ SELECT * FROM cats WHERE name="EGG";
 SELECT * FROM cats WHERE cat_id=age;
 ~~~~
 
-**20 ALIASES**
+**20. ALIASES**
 - Dễ dàng cho việc đọc result hơn
 - Có thể đổi tên 1 cột trong truy vấn đề có thể ngắn, dễ đọc, dễ type...
 - Không phải đổi tên cột mà là đổi ở chỗ kết quả đầu ra 
@@ -237,14 +238,139 @@ SELECT cat_id AS id, name FROM cats;
 
 ![image](/uploads/ac8af285beed4f606384e27a8a402484/image.png)
 
-**21 UPDATE**
+**21. UPDATE**
 ~~~sql
 UPDATE cats SET breed='Shorthair' WHERE breed='Tabby';
 --- kiểu WHERE khác
 UPDATE cats SET age=14 WHERE name='Misty';
 ~~~
 
-**22 DELETE**
+**22. DELETE**
 ~~~sql
 DELETE FROM cats WHERE name='Egg';
+~~~
+---
+**23. CONCAT**
+- Ta có 2 cột 'author_fname','author_lname'
+
+![image](/uploads/df6a59b5f080e368c625045ee61befb4/image.png)
+
+- Nếu muốn nối 2 data của 2 cột lại 
+
+~~~sql
+SELECT CONCAT (author_fname,author_lname)
+~~~
+
+![image](/uploads/81e687fa6ed2fe6d74df7f80a447d606/image.png)
+
+- Thêm khoảng cách
+
+~~~sql
+SELECT CONCAT (author_fname, " ", author_lname)
+~~~
+
+- Thêm 1 kí tự gì đó ở giữa các cột 
+
+~~~sql
+SELECT CONCAT_WS (' - ', author_fname, author_lname)
+~~~
+- CONCAT cột chứa số vẫn được
+
+**24. SUBSTRING**
+
+~~~sql
+SELECT SUBSTRING('Hello World', 1, 4); // Hell
+SELECT SUBSTRING('Hello World', 7); // World
+SELECT SUBSTRING('Hello World', -3); // rld
+~~~
+~~~sql
+SELECT SUBSTRING(title, 1, 10) AS 'short title' FROM books;
+~~~
+~~~sql
+SELECT SUBSTR(author_lname,1,1) AS 'first charactor', author_lname from books;
+~~~
+![image](/uploads/c9af6044d72bb16a656f554e1f553cd9/image.png)
+
+**25. COMBINE SUBSTRING & CONCAT**
+~~~sql
+SELECT CONCAT
+    (
+        SUBSTRING(title, 1, 10),
+        '...'
+    ) AS 'short title'
+FROM books;
+~~~
+
+**26 REPLACE**
+~~~sql
+SELECT
+  REPLACE('cheese bread coffee milk', ' ', ' and '); // cheese and bread and coffee and milk
+~~~
+
+- Thay kí tự tất cả kí tự "e" bằng số 3 ở các data trong column title
+~~~sql
+SELECT REPLACE(title, 'e ', '3') FROM books;
+~~~
+- Lưu ý là nó điều chỉnh data trả về thôi chứ k thay đổi gì trong data gốc
+
+**27 REVERSE**
+
+~~~sql
+SELECT REVERSE(author_fname), author_fname FROM books;
+~~~ 
+
+![image](/uploads/b53585a0919df06a25708241681ecc6e/image.png)
+
+**28 CHAR_LENGTH**
+
+~~~sql
+SELECT author_lname, CHAR_LENGTH(author_lname) AS 'length' FROM books;
+~~~
+
+![image](/uploads/7046edb8b6558c44e9aff8c82ad33263/image.png)
+
+**29 UPPER & LOWER**
+
+~~~sql
+SELECT UPPER(title) AS 'UPPER TITLE', title FROM books;
+~~~
+
+![image](/uploads/3e523751485f038bed5b00ae7abf52fc/image.png)
+
+**30 INSERT**
+
+- Lần lượt các argument là vị trí bắt đầu chèn, số kí tự bị thay thế, chuỗi cần chèn
+~~~sql
+SELECT INSERT ("Hello Bobby", 5,0,' There') // Hello There Bobby
+SELECT INSERT ("Hello Bobby", 6, 2,' There') // 'Hello Thereobby'
+~~~
+
+**31 RIGHT LEFT**
+- Trả về chuỗi theo thứ tự bên phải, hoặc bên trái sang tương ứng với số kí tự defined
+
+~~~sql
+SELECT LEFT("HELLO MYSQL", 4); // HELL
+SELECT RIGHT("HELLO MYSQL", 5); // MYSQL
+~~~
+
+**32 REPEAT**
+- Repeat chuỗi theo số lần tương ứng và ghép nó lại
+
+~~~sql
+SELECT REPEAT('hello', 3) // hellohellohello
+~~~
+
+**33 TRIM**
+- Xóa các kí tự trống ở hai bên chuỗi
+
+~~~sql
+SELECT TRIM('  hello ') // hello
+~~~
+- LEADING: xóa bên trái ký tự mong muốn
+~~~sql
+SELECT TRIM(LEADING '.' FROM '....hello+++') // hello+++
+~~~
+- TRAILING: xóa bên phải kí tự mong muốn
+~~~sql
+SELECT TRIM(TRAILING '+' FROM '....hello+++') // ....hello
 ~~~
