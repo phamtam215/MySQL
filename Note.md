@@ -118,7 +118,7 @@ CREATE TABLE cat2
 
 ![image](/uploads/f4f461e90462f57b5f1d1df54196e0d7/image.png)
 
-**14. Dấu nháy***
+**14. Dấu nháy**
 - Nếu thêm cùng loại thì phải thêm dấu `\`
 ```bash
 "Tom's cat"
@@ -279,9 +279,9 @@ SELECT CONCAT_WS (' - ', author_fname, author_lname)
 **24. SUBSTRING**
 
 ~~~sql
-SELECT SUBSTRING('Hello World', 1, 4); // Hell
-SELECT SUBSTRING('Hello World', 7); // World
-SELECT SUBSTRING('Hello World', -3); // rld
+SELECT SUBSTRING('Hello World', 1, 4); -- Hell
+SELECT SUBSTRING('Hello World', 7); -- World
+SELECT SUBSTRING('Hello World', -3); -- rld
 ~~~
 ~~~sql
 SELECT SUBSTRING(title, 1, 10) AS 'short title' FROM books;
@@ -301,10 +301,10 @@ SELECT CONCAT
 FROM books;
 ~~~
 
-**26 REPLACE**
+**26. REPLACE**
 ~~~sql
 SELECT
-  REPLACE('cheese bread coffee milk', ' ', ' and '); // cheese and bread and coffee and milk
+  REPLACE('cheese bread coffee milk', ' ', ' and '); -- cheese and bread and coffee and milk
 ~~~
 
 - Thay kí tự tất cả kí tự "e" bằng số 3 ở các data trong column title
@@ -313,7 +313,7 @@ SELECT REPLACE(title, 'e ', '3') FROM books;
 ~~~
 - Lưu ý là nó điều chỉnh data trả về thôi chứ k thay đổi gì trong data gốc
 
-**27 REVERSE**
+**27. REVERSE**
 
 ~~~sql
 SELECT REVERSE(author_fname), author_fname FROM books;
@@ -321,7 +321,7 @@ SELECT REVERSE(author_fname), author_fname FROM books;
 
 ![image](/uploads/b53585a0919df06a25708241681ecc6e/image.png)
 
-**28 CHAR_LENGTH**
+**28. CHAR_LENGTH**
 
 ~~~sql
 SELECT author_lname, CHAR_LENGTH(author_lname) AS 'length' FROM books;
@@ -329,7 +329,7 @@ SELECT author_lname, CHAR_LENGTH(author_lname) AS 'length' FROM books;
 
 ![image](/uploads/7046edb8b6558c44e9aff8c82ad33263/image.png)
 
-**29 UPPER & LOWER**
+**29. UPPER & LOWER**
 
 ~~~sql
 SELECT UPPER(title) AS 'UPPER TITLE', title FROM books;
@@ -337,40 +337,147 @@ SELECT UPPER(title) AS 'UPPER TITLE', title FROM books;
 
 ![image](/uploads/3e523751485f038bed5b00ae7abf52fc/image.png)
 
-**30 INSERT**
+**30. INSERT**
 
 - Lần lượt các argument là vị trí bắt đầu chèn, số kí tự bị thay thế, chuỗi cần chèn
 ~~~sql
-SELECT INSERT ("Hello Bobby", 5,0,' There') // Hello There Bobby
-SELECT INSERT ("Hello Bobby", 6, 2,' There') // 'Hello Thereobby'
+SELECT INSERT ("Hello Bobby", 5,0,' There') -- Hello There Bobby
+SELECT INSERT ("Hello Bobby", 6, 2,' There') -- 'Hello Thereobby'
 ~~~
 
-**31 RIGHT LEFT**
+**31. RIGHT LEFT**
 - Trả về chuỗi theo thứ tự bên phải, hoặc bên trái sang tương ứng với số kí tự defined
 
 ~~~sql
-SELECT LEFT("HELLO MYSQL", 4); // HELL
-SELECT RIGHT("HELLO MYSQL", 5); // MYSQL
+SELECT LEFT("HELLO MYSQL", 4); -- HELL
+SELECT RIGHT("HELLO MYSQL", 5); -- MYSQL
 ~~~
 
-**32 REPEAT**
+**32. REPEAT**
 - Repeat chuỗi theo số lần tương ứng và ghép nó lại
 
 ~~~sql
-SELECT REPEAT('hello', 3) // hellohellohello
+SELECT REPEAT('hello', 3) -- hellohellohello
 ~~~
 
-**33 TRIM**
+**33. TRIM**
 - Xóa các kí tự trống ở hai bên chuỗi
 
 ~~~sql
-SELECT TRIM('  hello ') // hello
+SELECT TRIM('  hello ') -- hello
 ~~~
 - LEADING: xóa bên trái ký tự mong muốn
 ~~~sql
-SELECT TRIM(LEADING '.' FROM '....hello+++') // hello+++
+SELECT TRIM(LEADING '.' FROM '....hello+++') -- hello+++
 ~~~
 - TRAILING: xóa bên phải kí tự mong muốn
 ~~~sql
-SELECT TRIM(TRAILING '+' FROM '....hello+++') // ....hello
+SELECT TRIM(TRAILING '+' FROM '....hello+++') -- ....hello
+~~~
+---
+**34. DISTINCT**
+- Loại bỏ các kết quả giống nhau ở output của query
+- Trước khi loại bỏ của `author_lname` có khá nhiều giá trị giống nhau
+
+![image](/uploads/d15ee224e44bc278c30e5936e98b7ee7/image.png)
+
+~~~sql
+SELECT DISTINCT author_lname FROM books
+~~~
+- Sau khi loại bỏ 
+
+![image](/uploads/2663cd98fcefb047d05e238a3067a1e3/image.png)
+
+- Nếu full name của tác giả thì sao (cần 2 trường author_lname, author_fname), vì trong ví dụ này có thể có những tác giả cùng họ nhưng khác tên thì cũng cần phải được chọn
+- Cách 1: Sử dụng concat + distinct
+
+~~~sql
+SELECT DISTINCT (CONCAT(author_fname, " ", author_lname)) from books
+~~~
+
+![image](/uploads/0c5afc7e4c343881ac1d9c44dcfc8f46/image.png)
+
+- Cách 2: Sử dụng DISTINCT
+~~~sql
+SELECT DISTINCT (author_fname, author_lname) from books
+~~~
+- Nó sẽ lọc ra 2 cột tương ứng
+
+![image](/uploads/0822b0fa78a3cebe481c2743762ff668/image.png)
+
+**35. ORDER BY**
+- Kết quả đầu ra của query sẽ được sắp xếp theo thứ tự của 1 cột (sau ORDER BY)
+~~~sql
+SELECT author_lname, book_id, author_fname FROM books ORDER BY author_fname
+~~~
+
+![image](/uploads/c6a3fb0cf9dce33a84b1951d0faf6266/image.png)
+
+- Theo mặc định nó sẽ là thứ tự giảm dần (ASCENDING), điều chỉnh bằng thêm DESC ở cuối hoặc ASC
+
+~~~sql
+SELECT author_lname, author_fname FROM books ORDER BY author_fname DESC
+~~~
+- Sắp xếp theo nhiều cột
+~~~sql
+SELECT book_id, author_fname, author_lname, pages
+FROM books ORDER BY author_lname, author_fname;
+~~~
+- Điều này có nghĩa là sẽ sắp xếp theo author_lname trước, đến author_fname
+- author_fname sẽ sắp xếp những author_lname có trùng lname nhưng khác fname theo giá trị giảm dần của fname (default)
+
+**36. LIMIT**
+~~~sql
+SELECT title, released_year FROM books LIMIT 0,3; -- bắt đầu từ row đầu tiên đến 3 row tiếp theo
+SELECT title, released_year FROM books LIMIT 3; -- bắt đầu từ row đầu tiên đến 3 row tiếp theo
+SELECT title, released_year FROM books LIMIT 2,10; -- bắt đầu từ row thứ 3 đến 10 row tiếp theo
+SELECT * FROM books LIMIT 95,18446744073709551615; -- row 95 đến row cuối cùng
+~~~
+
+**37. LIKE**
+- Không phân biệt chữ hoa chữ thường
+- Dấu phần trăm giống như biểu thị nơi scope bắt đầu và kết thúc, ở trước thì là tất cả trước, ở sau là tất cả sau
+
+- Tìm các data có dữ liệu chứa kí tự `da`
+~~~sql
+SELECT author_fname FROM books WHERE author_fname LIKE "%da%"
+~~~
+
+![image](/uploads/20b16b925928fab54d95a240601a05cd/image.png)
+
+
+- Tìm các data có dữ liệu bắt đầu với kí tự `D`
+~~~sql
+SELECT author_fname FROM books WHERE author_fname LIKE "D%"
+~~~
+
+![image](/uploads/a0c10a1c33ba266e44af891efd0273bc/image.png)
+
+
+- Tìm các data có dữ liệu kết thúc với kí tự `D`
+~~~sql
+SELECT author_fname FROM books WHERE author_fname LIKE "%D"
+~~~
+
+![image](/uploads/bb2f513a9be52f633d24c3fde9a31e92/image.png)
+
+- Tìm tất cả data có độ dài là 4 kí tự
+
+~~~sql
+SELECT author_fname FROM books WHERE author_fname LIKE "____"; -- 4 dấu gạch ngang
+~~~
+
+![image](/uploads/08b0f879feebe3c0aaf6cfd386b3f338/image.png)
+
+
+- Tìm tất cả data mà có 3 kí tự và kí tự a nằm giữa
+~~~sql
+SELECT author_fname FROM books WHERE author_fname LIKE "_a_";
+~~~
+
+![image](/uploads/0982026a9f2d862e25afd10c174e478f/image.png)
+
+- Tìm tất cả data có chứa kí tự `%`
+~~~sql
+SELECT author_fname FROM books WHERE author_fname LIKE "%\%%;
 ~~~
