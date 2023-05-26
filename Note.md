@@ -1,3 +1,5 @@
+# 1. CREATE DATABASE & TABLES
+
 **1. Show database**
 ~~~~sql
 show database;
@@ -79,6 +81,8 @@ DESC cats;
 ~~~~sql
 DROP TABLE <table name>
 ~~~~
+---
+# 2. INSERTING DATA
 
 **10. Instert Data**
 ~~~~sql
@@ -196,7 +200,8 @@ CREATE TABLE unique_cats3 (
   - Nếu add vào 5 thì sẽ là 1,2,3,5
   - Nếu từ 5 add kiểu tự động tăng thì 1,2,3,5,6 bỏ qua giá trị 4
 
-----
+---
+# 3. CRUD 
 **18. Introducing SELECT**
 ~~~~sql
 -- give me all columns of cats table
@@ -250,6 +255,7 @@ UPDATE cats SET age=14 WHERE name='Misty';
 DELETE FROM cats WHERE name='Egg';
 ~~~
 ---
+# 4. STRING
 **23. CONCAT**
 - Ta có 2 cột 'author_fname','author_lname'
 
@@ -375,6 +381,7 @@ SELECT TRIM(LEADING '.' FROM '....hello+++') -- hello+++
 SELECT TRIM(TRAILING '+' FROM '....hello+++') -- ....hello
 ~~~
 ---
+# 5. REFINING
 **34. DISTINCT**
 - Loại bỏ các kết quả giống nhau ở output của query
 - Trước khi loại bỏ của `author_lname` có khá nhiều giá trị giống nhau
@@ -480,4 +487,149 @@ SELECT author_fname FROM books WHERE author_fname LIKE "_a_";
 - Tìm tất cả data có chứa kí tự `%`
 ~~~sql
 SELECT author_fname FROM books WHERE author_fname LIKE "%\%%;
+~~~
+---
+# 6. AGGREGATE
+
+**38. COUNT**
+- Đếm giá trị không null
+~~~sql
+SELECT COUNT(*) FROM books; -- đến tất cả hàng
+SELECT COUNT(author_lname) FROM books; -- đếm tổng author_lname 
+SELECT COUNT(DISTINCT author_lname) FROM books; -- đếm tất cả author_lname 
+SELECT COUNT(DISTINCT author_lname) FROM books AS 'number of author_lname'; -- đếm tất cả author_lname và hiển thị tên cột là 'number of author_lname'
+~~~
+
+**39. GROUP BY**
+- Gộp các giá trị giống nhau thành 1 group
+- Ví dụ có `Lê Tâm`, `Phạm Tâm` thì chỉ hiển thị ở cột GROUP BY là `Tâm` nhưng count ra sẽ là 2
+- Ứng dụng để đếm số lượng từng phần tử giống nhau trong 1 cột
+- Sẽ có 2 tên Lahiri nhưng khác `author_fname` (`author_fname` có thể có giá trị hoặc null vì ở đây đếm tất cả các hàng `của 1 group` (`COUNT(*)`))
+~~~sql
+SELECT author_lname, COUNT(*) 
+FROM books
+GROUP BY author_lname;
+~~~
+
+![image](/uploads/cc49b26c2072ea6607f7490d0fc2f532/image.png)
+- Chỉ được select cột mà nó thực hiện GROUP BY vì nếu SELECT thêm cột khác để hiện thị, thì sẽ hiển thị cột đó như thế nào ? không có cách để hiện thị cột đó vì thế nên sẽ không SELECT
+
+- `GROUP BY` multiple columns
+- Hiển thị số lượng người có cả họ và tên trùng nhau
+~~~sql
+SELECT author_fname, author_lname, COUNT(*) 
+FROM books 
+GROUP BY author_lname, author_fname;
+~~~
+
+![image](/uploads/3b716c5dfa9af9249d7447e7ce19f5ae/image.png)
+
+**40. MIN MAX**
+
+~~~sql
+SELECT MAX(pages) FROM books; -- trả về cột MAX(pages) với giá trị là số pages lớn nhất
+ 
+SELECT MIN(author_lname) FROM books;
+~~~
+
+- Chỉ được select 1 cột thôi
+- Tuy nhiên muốn hiển thị tên của book có độ dài trang lớn nhất ?
+=> Sử dụng `Subqueries`
+
+**41. SUBQUERIES**
+- Làm thế nào để show ra tên tiêu đề của book có nhiều số trang
+- Cách 1
+~~~sql
+SELECT title, pages FROM books ORDER BY pages DESC LIMIT 1
+~~~
+  - Cách 2: sử dụng `SUBQUERIES` là query con
+~~~sql
+SELECT title, pages FROM books
+WHERE pages = (SELECT MAX(pages) FROM books)
+~~~
+- Tương đương với
+~~~sql
+SELECT title, pages FROM books
+WHERE pages = 634
+~~~
+- Cách 2 sẽ tối ưu hơn cách 1 vì có thể show ra nhiều giá trị (nếu nhiều cuốn sách có chung giá trị pages lớn nhất) vì cách 1 `LIMIT 1` thôi
+
+**42. MIN,MAX kết hợp GROUP BY**
+- Tìm số năm release lớn nhất và số năm nhỏ nhất của 1 tác giả
+~~~sql
+USE books;
+SELECT author_fname, author_lname,
+COUNT(*) AS 'number of books',
+MAX(released_year) AS 'latest_year',
+MIN(released_year) AS 'earlies_year'
+FROM books
+GROUP BY author_fname, author_lname;
+~~~
+
+![image](/uploads/50c499e38be0bb2fe14ab7257be9f43c/image.png)
+
+**43. SUM**
+- Tính tổng số 1 cột (nếu cột đó là string thì sẽ là 0)
+~~~sql
+SELECT SUM(author_fname) FROM books;
+~~~
+- Tính tổng số trang những người có trùng tên với nhau
+~~~sql
+SELECT author_lname, COUNT(*), SUM(pages)
+FROM books
+GROUP BY author_lname;
+~~~
+
+**43. AVG**
+~~~sql
+SELECT AVG(pages) FROM books;
+~~~
+
+~~~sql
+SELECT 
+    released_year, 
+    AVG(stock_quantity), 
+    COUNT(*) FROM books
+GROUP BY released_year;
+~~~
+
+![image](/uploads/7dc54b0a1c454805d7f28a1d4b3e295e/image.png)
+
+**44. EXERCISE**
+- in ra số books trong database
+~~~sql
+SELECT COUNT(*) FROM books;
+~~~
+- in ra số books theo từng năm
+~~~sql
+SELECT released_year, 
+COUNT(*) FROM books GROUP BY released_year;
+~~~
+- in ra tổng số books trong stock
+~~~sql
+SELECT SUM(stock_quantity) AS 'number of books' FROM books;
+~~~
+- in ra trung bình released_year cho mỗi author
+- mỗi author là 1 group AVG(relseaed_year) là cho mỗi group
+~~~sql
+SELECT * FROM books;
+SELECT author_fname, author_lname,
+AVG(released_year) 
+FROM books 
+GROUP BY author_fname, author_lname;
+~~~
+- tìm fullname của author người mà viết quyển sách nhiều trang nhất
+~~~sql
+SELECT CONCAT(author_fname, " ",author_lname) AS 'fullname'  
+FROM books
+WHERE pages = (SELECT MAX(pages) FROM books);
+~~~
+- hiển thị số lượng sách theo mỗi năm (số năm hiển thị tăng dần), đưa ra tổng số sách, đưa ra trung bình số trang
+~~~sql
+SELECT released_year,
+COUNT(*) AS 'boooks',
+AVG(pages)
+FROM books 
+GROUP BY released_year
+ORDER BY released_year DESC
 ~~~
