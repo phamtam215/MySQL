@@ -803,3 +803,139 @@ CREATE TABLE captions2 (
   created_at TIMESTAMP default CURRENT_TIMESTAMP,
   updated_at TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+---
+# LOGICAL OPERATORS
+
+**65. NOT EQUAL**
+~~~sql
+SELECT * FROM books WHERE released_year != 2017;
+~~~
+
+**66. NOT LIKE**
+
+~~~sql
+SELECT * FROM books WHERE released_year != 2017;
+~~~ 
+
+![image](/uploads/b77589d864dcb09ec61cf191ff6187e3/image.png) 
+
+- `NOT LIKE` là phần data còn lại
+
+**67. GREATER THAN**
+~~~sql
+SELECT * FROM books
+WHERE pages > 500;
+~~~
+
+**68. LESS THAN or EQUAl TO**
+~~~sql
+SELECT * FROM books
+WHERE released_year <= 1985;
+~~~
+
+**69. AND**
+- In ra các book được viết bởi Dave Eggers published sau năm 2010
+- Có 2 phần thông tin cơ bản cần kết hợp là được viết bởi Dave Eggers và publish sau 2010
+~~~sql
+SELECT * FROM books WHERE author_lname = 'Eggers' AND released_year > 2010;
+~~~
+![image](/uploads/53ce33f74991c77c0554f1d2e91c9114/image.png)
+- Có thể add thêm nhiều `AND` query nữa
+
+**70. OR**
+- Lọc title các quyển sách có tác giả là Eggers hoặc số năm sau 2010
+
+```sql
+SELECT title, author_lname, released_year FROM books
+WHERE author_lname='Eggers' OR
+released_year > 2010;
+```
+
+![image](/uploads/13849d8e8084de6168a00766195d8a3b/image.png)
+
+**71. BETWEEN**
+- Đưa ra các book publish giữa nằm 2004 và 2015
+- Cách 1
+~~~sql
+SELECT title, released_year FROM books WHERE released_year >= 2004 AND released_year <= 2015;
+~~~
+- Cách 2
+~~~sql
+SELECT title, released_year FROM books WHERE released_year BETWEEN 2004 AND 2015;
+~~~
+- NOT BETWEEN
+~~~sql
+SELECT title, released_year FROM books WHERE released_year NOT BETWEEN 2004 AND 2015;
+~~~
+
+**72. Comparing Date**
+- Có thể sử dụng CAST để chuyển sang từ dữ liệu này sang dữ liệu khác
+- Ở ví dụ lần này, convert từ chuỗi thành date
+~~~sql
+SELECT CAST ('09:00:00' AS TIME)
+~~~
+- Cần convert sang từ string sang giờ để so sánh những là recommend
+~~~sql
+SELECT * FROM people WHERE birthtime 
+BETWEEN CAST('09:00:00' AS TIME) 
+AND CAST('16:00:00' AS TIME);
+~~~
+
+![image](/uploads/5391a212281057c24252d4b3707481fc/image.png)
+
+- Kết quả là như nhau nhưng cái trên được recommend hơn
+~~~sql
+SELECT * FROM people WHERE birthtime 
+BETWEEN '09:00:00'
+AND '16:00:00';
+~~~
+
+**73. IN & %**
+- In ra tất cả các books được viết bởi Carver hoặc Lahiri hoặc Smith
+~~~sql
+SELECT title, author_lname FROM books 
+WHERE author_lname ='Carver'
+OR author_lname ='Lahiri'
+OR author_lname ='Smith'
+~~~
+- Cách nhanh hơn
+~~~sql
+SELECT title, author_lname FROM books 
+WHERE author_lname IN ('Carver', 'Lahiri', 'Smith' )
+~~~
+- Ngược lại NOT IN
+~~~sql
+SELECT title, author_lname FROM books 
+WHERE author_lname NOT IN ('Carver', 'Lahiri', 'Smith' )
+~~~
+- In ra tất cả các books có năm là số lẻ
+- Thay vì sử dụng NOT IN và truyền vào các số chẵn thì ta sử dụng `MODULO %`
+~~~sql
+SELECT title, author_lname, released_year FROM books 
+WHERE released_year % 2 != 0;
+~~~
+
+**74. CASE**
+- Sử dụng khi đưa ra quyết định về các kết quả dựa trên các giá trị có sẵn
+- Kiểu như kết hợp nhiều if statemnent
+~~~sql
+SELECT 
+    title,
+    stock_quantity,
+    CASE
+        WHEN stock_quantity <= 40 THEN '*'
+        WHEN stock_quantity <= 70 THEN '**'
+        WHEN stock_quantity <= 100 THEN '***'
+        WHEN stock_quantity <= 140 THEN '****'
+        ELSE '*****'
+    END AS stock
+FROM
+    books;
+~~~ 
+
+![image](/uploads/e6669a0d9bc1965b4abd90d79d1bbea7/image.png)
+
+**75. IS NULL**
+~~~sql
+SELECT * FROM books WHERE title IS NULL
+~~~
