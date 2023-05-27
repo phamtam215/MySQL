@@ -633,3 +633,173 @@ FROM books
 GROUP BY released_year
 ORDER BY released_year DESC
 ~~~
+---
+# REVISTING DATA TYPES
+**45. VARCHAR & CHAR**
+- VARCHAR: bao nhiêu kí tự thì lưu chừng đó byte
+- nếu name là "tam" -> thì chiếm 3 slot trong ô nhớ, "tam1" chiếm 4 slot
+~~~sql
+CREATE TABLE cats (
+    name VARCHAR(4),
+~~~
+- CHAR: bao nhiêu kí tự cũng lưu tối đa số byte
+- bất kể name là "ta", "tam", "tam1" thì nếu thiếu nó tự động fill vào chỗ trống cho đủ 4 slot gây lãng phí
+~~~sql
+CREATE TABLE cats (
+    name CHAR(4),
+~~~
+
+![image](/uploads/9132713b455d3dd90c395c8d1753cc00/image.png)
+
+- Tuy nhiên số lượng bộ nhớ của VARCHAR đôi khi sẽ bị dôi 1 byte so với CHAR
+- Vì thế nếu lưu data với số lượng ô nhớ nhất định thì nên dùng CHAR cho tiết kiệm hơn
+- Ví dụ như lưu số điện thoại, zip code, yes/no
+- Còn lại nến sử dụng VARCHAR
+
+**46. INT, TINYINT, BIGINT**
+- Tra bảng để có lựa chọn tốt nhất tránh lãng phí tài nguyên
+
+**47. DECIMAL**
+~~~sql
+CREATE TABLE products (
+  price DECIMAL(5,2)
+);
+~~~
+- `DECIMAL(5,2)`: có nghĩa là phần thập phân 2 chữ số, phần nguyên 3 chữ số cộng lại là 5 chữ số
+- Trường hợp lỗi
+  - `ERROR`: nếu phần nguyên vượt quá số chữ số quy định
+  - `WARNING`: nếu phần thập phân vượt quá chữ số quy định, nó sẽ vẫn lưu nhưng sẽ làm tròn, nếu ta lưu chữ số `23,21534` thì nó sẽ lưu là `23,22`
+
+**58. FLOAT & DOUBLE**
+- So với kiểu `DECIMAL` thì `DECIMAL` chính xác hơn tuy nhiên lại chiếm nhiều dung lượng hơn
+- Nếu ta sử dụng float hoặc double thì sẽ lưu trữ số lớn hơn và tiết kiệm được dung lượng
+- Nhưng trả giá bằng độ chính xác
+
+![image](/uploads/eb15397d0dc1aaa7b7747deeb823e56f/image.png)
+
+- `FLOAT` chính xác tới 7 chữ số thập phần, và `DOUBLE` thì 15
+
+**59. DATE & TIMES**
+- DATE: YYYY-MM-DD
+- TIME: HH:MM:SS
+- DATETIME: YYYY-MM-DD HH:MM:SS
+
+~~~sql
+CREATE TABLE people (
+	name VARCHAR(100),
+    birthdate DATE,
+    birthtime TIME,
+    birthdt DATETIME
+);
+ 
+INSERT INTO people (name, birthdate, birthtime, birthdt)
+VALUES ('Elton', '2000-12-25', '11:00:00', '2000-12-25 11:00:00');
+ 
+INSERT INTO people (name, birthdate, birthtime, birthdt)
+VALUES ('Lulu', '1985-04-11', '9:45:10', '1985-04-11 9:45:10');
+ 
+INSERT INTO people (name, birthdate, birthtime, birthdt)
+VALUES ('Juan', '2020-08-15', '23:59:00', '2020-08-15 23:59:00');
+~~~
+
+**60. CURDATE & CURTIME**
+
+~~~sql
+SELECT CURTIME(); -- current time
+ 
+SELECT CURDATE(); --current date
+ 
+SELECT NOW(); --current datetime
+~~~
+
+**61. DATE FUNCTION**
+
+~~~sql
+SELECT 
+    birthdate,
+    DAY(birthdate),
+    DAYOFWEEK(birthdate),
+    DAYOFYEAR(birthdate)
+FROM people;
+~~~
+
+![image](/uploads/11ea801b94a293620d979f017b32484e/image.png) 
+
+~~~sql
+SELECT 
+    birthdate,
+    MONTHNAME(birthdate),
+    YEAR(birthdate)
+FROM people;
+~~~
+
+![image](/uploads/ef1edd6081864791f2a33d13d4b6c4ce/image.png)
+
+~~~sql
+SELECT 
+    birthtime,
+    HOUR(birthtime),
+    MINUTE(birthtime)
+FROM people;
+~~~
+
+~~~sql
+SELECT 
+    birthdt,
+    MONTH(birthdt),
+    DAY(birthdt),
+    HOUR(birthdt),
+    MINUTE(birthdt)
+FROM people;
+~~~
+
+**62. FORMATTING DATE**
+- Tự tạo format riêng cho mình
+- Sử dụng date format, đọc doc để biết %a và cá cái khác là gì
+~~~sql
+SELECT birthdate, DATE_FORMAT(birthdate, '%a %b %D') FROM people;
+ 
+SELECT birthdt, DATE_FORMAT(birthdt, '%H:%i') FROM people;
+ 
+SELECT birthdt, DATE_FORMAT(birthdt, 'BORN ON: %r') FROM people;
+~~~
+
+**63. DATE MATH**
+- DATEDIFF(expr1, expr2) (tìm khoảng cách giữa 2 thời điểm)
+~~~sql
+SELECT DATEDIFF(CURDATE().birthdate) FROM people
+~~~
+- DATE_ADD (date, INTERVAL expr unit ) (tìm thời điểm sau này 1 khoảng thời gian)
+~~~sql
+SELECT DATE_ADD(CURDATE(), INTERVAL 1 YEAR) --- 2 DAY, 3 MONTH
+~~~
+
+Một số ví dụ khác
+~~~sql
+SELECT birthdate, YEAR(birthdate + INTERVAL 21 YEAR) FROM people
+~~~
+
+**64. TIMESTAMP**
+- Chỉ hỗ trợ thời gian từ 1970 đến 2038
+- Tiết kiệm bộ nhớ hơn
+~~~sql
+SELECT TIMESTAPMP(2023-05-27 17:23:14);
+~~~
+- Kết quả y hệt
+
+![image](/uploads/4c4baef409d73dbaeba415a199b5cd0e/image.png)
+
+- TIMESTAMP có thể được dùng để cập nhật thời gian default và on
+- default : trường hợp này là mỗi khi data được insert vào thì trường created_at sẽ được tạo với giá trị mặc định là `CURRENT_TIMESTAMP`
+~~~sql
+CREATE TABLE captions (
+  text VARCHAR(150),
+  created_at TIMESTAMP default CURRENT_TIMESTAMP
+);
+~~~
+- update : trường hợp này là mỗi khi data bị sửa thì trường update_at sẽ được update với `CURRENT_TIMESTAMP`
+CREATE TABLE captions2 (
+  text VARCHAR(150),
+  created_at TIMESTAMP default CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
