@@ -939,3 +939,122 @@ FROM
 ~~~sql
 SELECT * FROM books WHERE title IS NULL
 ~~~
+---
+# CONSTRAINTS & ALTER TABLE
+
+**76. UNIQUE CONSTRAINTS**
+- Ràng buộc UNIQUE là một cách thiết lập và thực thi tính duy nhất của một cột cụ thể
+~~~sql
+CREATE TABLE contacts (
+	name VARCHAR(100) NOT NULL,
+    phone VARCHAR(15) NOT NULL UNIQUE
+);
+ 
+INSERT INTO contacts (name, phone)
+VALUES ('billybob', '8781213455');
+-- Xảy ra lỗi
+INSERT INTO contacts (name, phone)
+VALUES ('billybob', '8781213455');
+~~~ 
+- Xảy ra lỗi khi add thêm một số điện thoại trùng với số điện thoại đã có trong cột "phone", do cột phone có sử dụng UNIQUE constraint
+
+
+**77. CHECK CONSTRAINTS**
+- Add những giá trị vào cột tuổi phải lớn hơn 18
+~~~sql
+CREATE TABLE parties (
+name VARCHAR(10),
+age INT CHECK (age>18)
+);
+~~~
+- Add `age > 18` vào sẽ báo lỗi
+- Chỉ cần điền vào CHECK 1 impression
+
+**78. NAMED CONSTRAINTS**
+- Thông thường khi không thỏa mãn CONSTRAINT nó sẽ báo lỗi `Error Code: 3819. Check constraint 'parties_chk_1' is violated.`
+- Chúng ta có thể custom tên của CONSTRAINT đó lại để mỗi constraint có lỗi khác nhau
+~~~sql
+CREATE TABLE users2 (
+    username VARCHAR(20) NOT NULL,
+    age INT,
+    CONSTRAINT age_not_negative CHECK (age >= 0)
+);
+~~~
+- `Error Code: 3819. Check constraint 'parties_chk_1' is violated.` ==> `Error Code: 3819. Check constraint 'age_not_negative' is violated.`
+
+**79. MULTIPLE -COLUMN CHECK**
+- **UNIQUE CONSTRAINTS**
+~~~sql
+CREATE TABLE companies (
+    name VARCHAR(255) NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    CONSTRAINT name_address UNIQUE (name , address)
+);
+~~~
+- **CHECK CONSTRAINTS**
+
+~~~sql
+CREATE TABLE houses (
+  purchase_price INT NOT NULL,
+  sale_price INT NOT NULL,
+  CONSTRAINT sprice_gt_pprice CHECK(sale_price >= purchase_price)
+);
+~~~
+
+**80. ALTER TABLE**
+- Thay đổi cấu trúc của TABLE
+
+- **ADDING COMLUMN**
+~~~sql
+
+ALTER TABLE users
+ADD COLUMN address VARCHAR(15); -- giá trị ban đầu là null
+
+ALTER TABLE companies
+ADD COLUMN employee_count INT NOT NULL DEFAULT 1; -- giá trị ban đầu là 1
+~~~
+
+- **DROPPING COMLUMN**
+~~~sql
+ALTER TAble users
+DROP COLUMN employee_count
+~~~
+
+- **RENAMEING COMLUMN**
+~~~sql
+ALTER TABLE suppliers RENAME TO companies; -- đổi tên table
+ALTER TABLE companies RENAME COLUMN username TO company_name; -- đổi tên column
+~~~
+
+- **MODIFY COLUMN**
+- Đổi lại kiểu dữ liệu và các định nghĩa khác của Column
+~~~sql
+ALTER TABLE companies
+MODIFY company_name VARCHAR(100) DEFAULT 'unknown';
+~~~
+- Đổi tên, kiểu dữ liệu và các định nghĩa khác của Column
+~~~sql
+ALTER TABLE suppliers
+CHANGE business biz_name VARCHAR(50);
+~~~
+
+**81. CONSTRAINTS OF TABLE**
+
+~~~sql
+CREATE TABLE houses(
+    purchase_price NOT NULL,
+    sale_price INT NOT NULL,
+    CONSTRAIT sprice_gr_price CHECK (sale_price >= purchase_price )
+)
+~~~
+
+- **ADD NEW CONSTRAINTS**
+~~~sql
+ALTER TABLE houses 
+ADD CONSTRAINT positive_pprice CHECK (purchase_price >= 0);
+~~~
+- **DROP CONSTRAINTS**
+~~~sql
+ALTER TABLE houses DROP CONSTRAINT positive_pprice;
+~~~
+
