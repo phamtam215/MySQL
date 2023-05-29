@@ -147,3 +147,58 @@ CREATE TABLE orders (
 
 - `ON DELETE CASCADE` thêm option này vào thì khi 1 customer bị xóa mà có link với orders thì trường order của customer đó cũng sẽ tự động xóa theo
 ---
+# 2. Many to Many
+![image](/uploads/2518b8368fd12a46a136421ba7ee9383/image.png)
+
+**Challenge 1: Identify the series that have no reviews**
+
+~~~sql
+SELECT title AS unreviewed_series FROM series
+LEFT JOIN reviews ON series.id = reviews.series_id
+WHERE series_id = NULL
+~~~
+
+**Challenge 2: Identify average vote genre of series**
+~~~sql
+SELECT genre ROUND(AVG(rating), 2) as avg_rating FROM series
+JOIN reviews ON series.id = review.series.id
+GROUP BY genre
+~~~
+
+**Challenge 3: Đưa ra firstname, lastname với tổng số review, điểm MIN, điểm MAX, tổng trung bình điểm, status là inactive nếu rating = 0**
+- Overview
+    - LEFT JOIN với reviews để xác định là có review
+    - In ra firstname, lastname, count review, avg, min, max
+    - Status sử dụng case
+
+~~~sql
+SELECT first_name, last_name,
+       COUNT(rating) as nums_of_rating
+       IFNULL(MIN(rating), 0) as min,
+       IFNULL(MAX(rating), 0) as min,
+       ROUND(IFNULL(AVG(rating),0),2) as average,
+       CASE
+            WHEN COUNT(rating) > 0 THEN 'ACTIVE'
+            ELSE 'INACTIVE'
+       END AS status
+FROM reviewers
+LEFT JOIN reviews ON reviewers.id = reviews.reviewer_id
+GROUP BY first_name , last_name;
+~~~
+
+![image](/uploads/b2c679d1e431faae4a3d5acf95fc36c5/image.png)
+
+**Challenge 4: In ra kết quả gồm title, rating, reviewers**
+
+~~~sql
+SELECT 
+    title,
+    rating,
+    CONCAT(first_name, ' ', last_name) AS reviewer
+FROM
+ reviews
+        INNER JOIN
+    series ON reviews.series_id = series.id
+        INNER JOIN
+    reviewers ON reviews.reviewer_id = reviewers.id;
+~~~
