@@ -202,3 +202,97 @@ FROM
         INNER JOIN
     reviewers ON reviews.reviewer_id = reviewers.id;
 ~~~
+---
+**6. VIEW**
+
+~~~sql
+SELECT title, released_year, genre, rating, first_name, last_name FROM reviews
+JOIN series ON series.id = reviews.series_id
+JOIN reviewers ON reviewers.id = reviews.reviewer_id;
+~~~
+- Kết quả của truy vấn này là 1 bảng
+- Xuất phát từ nhu cầu ta muốn sử dụng bảng kết quả này cho những query lần sau, thì thay vì mỗi lần phải thực hiện các query ở trên lần nữa thì ta sử dụng View
+- View sẽ biến bảng kết quả thành 1 bảng ảo (khi show table là có luôn bảng ảo này), bảng này có thể thực hiện các thao tác như 1 bảng thông thường nhưng không ảnh hưởng đến data của các bảng thực
+
+~~~sql
+CREATE VIEW full_reviews AS
+SELECT title, released_year, genre, rating, first_name, last_name FROM reviews
+JOIN series ON series.id = reviews.series_id
+JOIN reviewers ON reviewers.id = reviews.reviewer_id;
+~~~
+- Tạo 1 bảng ảo `full_reviews`
+~~~sql
+SELECT * FROM full_reviews; -- kết quả như trên
+~~~
+
+**7. UPDATEABLE VIEW**
+- Bảng ảo ở 6 sẽ không thể update data được vì có chứa JOIN
+- Ngoài ra còn có GROUP BY,... tra cứu document => các kết quả đó, bảng ảo của nó sẽ chỉ có thể thao tác xem, không thể update
+- Tuy nhiên, nhưng bảng ảo kết quả của những query này có thể update được (thêm, sửa, xóa)
+~~~sql
+CREATE VIEW order_series AS
+SELECT * FROM series ORDER BY released_year;
+~~~
+
+**8. REPLACING/ALTERING VIEW**
+- Xảy ra các trường hợp
+    - muốn thay đổi query để đưa ra bảng view khác thay thế view cũ 
+    - ví dụ như thêm cột, đổi order ... 
+- Cách 1
+~~~sql
+ALTER VIEW ordered_series AS
+SELECT * FROM series ORDER BY released_year DESC; -- sắp xếp lại thứ tự giảm dần
+~~~
+- Cách 2
+~~~sql
+CREATE OR REPLACE VIEW ordered_series AS
+SELECT * FROM series ORDER BY released_year DESC;
+~~~
+- DROP VIEW
+~~~sql
+DROP order_series
+~~~
+
+**9. HAVING CLAUSE**
+~~~sql
+SELECT 
+    title, 
+    AVG(rating),
+    COUNT(rating) AS review_count
+FROM full_reviews 
+GROUP BY title WHERE HAVING(rating) > 1;
+~~~
+- Mệnh đề `HAVING` được sử dụng trong truy vấn sau mệnh đề `GROUP BY` để áp dụng điều kiện lên các kết quả đã được nhóm.
+
+**10. SQL MODE**
+- Xem mode hiện tại
+~~~sql
+SELECT @@GLOBAL.sql_mode;
+SELECT @@SESION.sql_mode;
+~~~
+- SET mode
+- Khi sử dụng lệnh SET này cần liệt kê tất cả mode vào, nếu muốn disable mode nào thì bỏ mode đó ra
+- Các mode được lấy từ dòng xem mode ở trên
+- Các mode cách nhau dấu phẩy
+~~~sql
+SET GLOBAL sql_mode = '<mode_name>';
+SET SESSION sql_mode = '<mode_name>';
+SET GLOBAL sql_mode =" ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION"
+~~~
+
+**11. STRICT_TRANS_TABLES**
+- Là 1 SQL mode mặc định
+- Trans =  Transactional
+- Ở mode này nếu cột là số mà điền string là báo lỗi
+- Nếu không có mode này thì điền string vào trường số thì vẫn bình thường
+
+**12. MORE MODE**
+1. MODE ONLY_FULL_GROUP_BY là mode mà chỉ cho phép những trường được SELECT có thể GROUP_BY, nếu tắt mode này đi thì 
+~~~sql
+SELECT title, rating FROM series GROUP BY title
+~~~
+- Query này sẽ chạy, rating sẽ hiện thị giá trị đầu tiên của nó trong 1 group
+
+ Và nhiều mode khác nữa tự nghiên cứu đi
+ ---
+
