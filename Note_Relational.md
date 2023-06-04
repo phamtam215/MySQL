@@ -295,4 +295,165 @@ SELECT title, rating FROM series GROUP BY title
 
  Và nhiều mode khác nữa tự nghiên cứu đi
  ---
+**13. INTRODUCE WINDOW FUNCTION**
+- Ban đầu, khi cần sử dụng tính trung bình của 1 đối tượng gì đó ta cần sử dụng GROUP BY chia data thành những group và tính trung bình
+- Nhưng với window function sẽ không cần GROUP BY nữa, 2 ảnh dưới sẽ cho thấy sự khác biệt giữa tính trung bình sử dụng GROUP BY và WINDOW fucntion
 
+![image](/uploads/6e21924c92a8830c6e4a033d997e44cb/image.png)
+
+![image](/uploads/463eebc69c57435dd7581a3ae3288712/image.png)
+
+**14. USING OVER()**
+~~~sql
+SELECT emp_no, department, salary, AVG(salary) OVER() FROM employees;
+~~~
+- Clause OVER constructs a window
+- Khi clause OVER() bị empty nó sẽ include all records
+- Vì thế kết quả nó bảng này ở mỗi hàng sẽ là mức trung bình của tất cả salary
+
+![image](/uploads/b62787060b2dba547f57e1020bc830eb/image.png)
+
+- Trường hợp sử dụng MIN, MAX
+    - MIN, MAX chỉ đi với GROUP, hoặc ở một mình nó không được như thế này là lỗi, vì nó không biết đang tính MIN, MAX cho GROUP hay WINDOW nào (In aggregated query without GROUP BY, expression #1 of SELECT list contains nonaggregated column 'books.employees.emp_no'; this is incompatible with sql_mode=only_full_group_by)
+    ~~~sql
+    SELECT emp_no, department, MIN(salay), MAX(salary) FROM employees
+    ~~~
+    - Nhưng sử dụng OVER() nó sẽ tính được toàn bộ các row
+    ~~~sql
+    SELECT 
+    emp_no, 
+    department, 
+    salary, 
+    MIN(salary) OVER(),
+    MAX(salary) OVER()
+    FROM employees;
+    ~~~
+    
+**15. PARTITION**
+- Partition: vách ngăn, sự chia ra
+- Bên trong OVER() sử dụng PARTITION BY để tạo các hàng thành các nhóm hàng
+
+~~~sql
+SELECT 
+    emp_no, 
+    department, 
+    salary, 
+    AVG(salary) OVER(PARTITION BY department) AS dept_avg
+FROM employees;
+~~~
+
+![image](/uploads/03a2ab6118c1c54c097673ba47f2c83b/image.png)
+
+~~~sql
+SELECT 
+    department, 
+    AVG(salary) 
+FROM employees
+GROUP BY department;
+~~~
+
+![image](/uploads/5638be18507deeaf17ce6790cbe69167/image.png)
+
+**16. WINDOW & ORDER BY**
+~~~sql
+SELECT 
+    emp_no, 
+    department, 
+    salary, 
+    SUM(salary) OVER(PARTITION BY department ORDER BY salary) AS rolling_dept_salary,
+    SUM(salary) OVER(PARTITION BY department) AS total_dept_salary
+FROM employees;
+~~~
+- Kết quả cũng tương tự những cái ở trên, tuy nhiên trong mỗi window sẽ có sự sắp xếp tăng dần của trường salary
+
+![image](/uploads/773eff86af6701429039f5e095389d44/image.png)
+
+**17. RANK**
+- Là thể hiện mức rank của mỗi data trong phạm vi window cụ thể
+- Kết quả so sánh rank ở mỗi window
+
+![image](/uploads/6b47a98bee7e2b76e4d1b079c78982fe/image.png)
+
+~~~sql
+SELECT 
+    emp_no, 
+    department, 
+    salary,
+    RANK() OVER(PARTITION BY department ORDER BY salary DESC) AS department_salary
+FROM employees;
+~~~
+- Ở mỗi department window ta có sự sắp xếp salary rank là department_salary (OVER(PARTITION salary)), và sự sắp xếp salary rank với total data của mỗi data
+
+~~~sql
+SELECT 
+    emp_no, 
+    department, 
+    salary,
+    RANK() OVER(PARTITION BY department ORDER BY salary DESC) AS department_salary,
+    RANK() OVER(ORDER BY salary DESC) AS total_salary
+FROM employees;
+~~~
+
+![image](/uploads/c31161ece183362cead283db8e2229db/image.png)
+
+
+**18. ROW NUMBER, DENSE_RANK**
+- Sự khác biệt giữa `RANK`, `ROW_NUMBER`, `DENSE_RANK` ở 1 window
+
+~~~sql
+SELECT 
+    emp_no, 
+    department, 
+    salary,
+    ROW_NUMBER() OVER(PARTITION BY department ORDER BY SALARY DESC) as dept_row_number,
+    RANK() OVER(PARTITION BY department ORDER BY SALARY DESC) as dept_salary_rank,
+    DENSE_RANK() OVER(PARTITION BY department ORDER BY SALARY DESC) as overall_dense_rank
+    FROM employees;
+~~~
+
+![image](/uploads/dd27a640e78b3e7b7a8c5cb54f43e379/image.png)
+
+**19. NTILE**
+- Chia window thành các phần theo số lượng chia
+- Trường hợp này là chia thành 2 phần
+~~~sql
+SELECT 
+    emp_no, 
+    department, 
+    salary,
+    NTILE(2) OVER(PARTITION BY department ORDER BY salary DESC) AS dept_salary_quartile
+FROM employees;
+~~~
+
+![image](/uploads/d35a2b5fe425e1a406f60f47fc48aa4f/image.png)
+
+**20. FIRST_VALUE**
+- Trả về giá trị first, last, index của window
+
+~~~sql
+SELECT 
+    emp_no, 
+    department, 
+    salary,
+    FIRST_VALUE(salary) OVER(PARTITION BY department ORDER BY salary DESC) AS dept_salary_fist,
+    LAST_VALUE(salary) OVER(PARTITION BY department ORDER BY salary DESC) AS dept_salary_last,
+    NTH_VALUE(salary, 2) OVER(PARTITION BY department ORDER BY salary DESC) AS dept_salary_second
+FROM employees;
+~~~
+
+![image](/uploads/c88644f17c5bf3cba884e6d45584f3e7/image.png)
+
+**21. LEAD, LAG**
+- Giá trị của hàng này sẽ bằng giá trị của hàng kết tiếp
+
+~~~sql
+SELECT 
+    emp_no, 
+    department, 
+    salary,
+    LAG(salary) OVER(PARTITION BY department ORDER BY salary DESC) as salary_diff,
+    LEAD(salary) OVER(PARTITION BY department ORDER BY salary DESC) as salary_diff_2
+FROM employees;
+~~~
+
+![image](/uploads/0784f528fcf51dbbc01a48503bcfa09a/image.png)
